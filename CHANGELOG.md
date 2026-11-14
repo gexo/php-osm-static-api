@@ -3,7 +3,7 @@
 All notable changes of this fork are documented in this file.
 For releases up to 0.6.4, see the [original repository](https://github.com/DantSu/php-osm-static-api).
 
-## [Unreleased] - 0.7.0
+## [0.7.0] - 2026-11-15
 
 First release of the fork `gexo/php-osm-static-api`.
 
