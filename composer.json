@@ -30,6 +30,13 @@
     "issues": "https://github.com/gexo/php-osm-static-api/issues",
     "source": "https://github.com/gexo/php-osm-static-api"
   },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/gexo/php-image-editor",
+      "no-api": true
+    }
+  ],
   "require": {
     "php": ">=8.1",
     "gexo/php-image-editor": "^1.5"

@@ -1,6 +1,5 @@
 [![CI](https://github.com/gexo/php-osm-static-api/actions/workflows/ci.yml/badge.svg)](https://github.com/gexo/php-osm-static-api/actions/workflows/ci.yml)
-[![Packagist](https://img.shields.io/packagist/dt/gexo/php-osm-static-api.svg)](https://packagist.org/packages/gexo/php-osm-static-api)
-[![Latest Stable Version](https://poser.pugx.org/gexo/php-osm-static-api/v/stable)](https://packagist.org/packages/gexo/php-osm-static-api)
+[![Latest tag](https://img.shields.io/github/v/tag/gexo/php-osm-static-api?sort=semver)](https://github.com/gexo/php-osm-static-api/tags)
 [![GitHub license](https://img.shields.io/github/license/gexo/php-osm-static-api.svg)](https://github.com/gexo/php-osm-static-api/blob/master/LICENSE)
 
 # PHP OpenStreetMap Static API
@@ -28,11 +27,32 @@ See [CHANGELOG.md](./CHANGELOG.md) for the changes compared to the original pack
 
 ## Installation
 
-Install this library easily with composer :
+This fork and its dependency `gexo/php-image-editor` are not published on Packagist.
+Add **both** repositories to the `composer.json` of your project:
 
-```cmd
-composer require gexo/php-osm-static-api
+```json
+{
+  "repositories": [
+    { "type": "vcs", "url": "https://github.com/gexo/php-osm-static-api" },
+    { "type": "vcs", "url": "https://github.com/gexo/php-image-editor" }
+  ],
+  "require": {
+    "gexo/php-osm-static-api": "^0.7"
+  }
+}
 ```
+
+Then run `composer update gexo/php-osm-static-api`.
+
+The `php-image-editor` entry is required although your project uses it only indirectly: Composer only reads
+`repositories` from the root `composer.json` of a project, not from dependencies.
+
+If your project required `dantsu/php-osm-static-api` before, replace it with `gexo/php-osm-static-api`.
+Your PHP code does not need to change, the namespaces are the same.
+
+For `github.com` repositories, Composer uses the GitHub API, which allows only 60 anonymous requests per hour.
+If you hit that limit, either configure a GitHub token (`composer config --global github-oauth.github.com <token>`)
+or add `"no-api": true` to both repository entries, so that Composer uses plain Git instead.
 
 ## How to use
 

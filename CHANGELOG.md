@@ -10,6 +10,7 @@ First release of the fork `gexo/php-osm-static-api`.
 ### Changed
 
 - Package renamed to `gexo/php-osm-static-api`. The `DantSu\OpenStreetMapStaticAPI` namespace is unchanged.
+- Not published on Packagist: install it via VCS repositories, see the installation section of the README.
 - Depends on `gexo/php-image-editor` ^1.5 instead of `dantsu/php-image-editor`. The fork replaces the original package
   and keeps the `DantSu\PHPImageEditor` namespace. It removes the PHP 8.5 deprecations (`curl_close()`, `imagedestroy()`)
   and the "Undefined array key" warnings when downloading tiles on the command line.
