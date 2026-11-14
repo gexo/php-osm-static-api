@@ -14,6 +14,14 @@ use DantSu\PHPImageEditor\Image;
  * - compare an image against a stored reference image ("golden image") with a small tolerance.
  *
  * Golden images live in tests/fixtures/golden. To (re)generate them, run the suite with UPDATE_GOLDEN=1.
+ *
+ * GD variants: PHP can be built with its bundled GD library (official Docker images, Windows) or with the system
+ * libgd (most Linux distributions, also GitHub Actions via setup-php). Both render TrueType text differently
+ * (different glyph metrics, so text can be several pixels wider). Therefore:
+ * - <name>.png is the golden image for the bundled GD,
+ * - <name>.libgd-<version>.png is an optional golden image for a system libgd; it only exists if the output
+ *   differs from <name>.png, and it is used instead of <name>.png on that libgd version.
+ * Running with UPDATE_GOLDEN=1 on a system libgd creates or removes these variant files as needed.
  */
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -105,15 +113,15 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     {
         $this->assertTrue($image->isImageDefined(), 'Image under test is not defined.');
 
-        $goldenPath = static::GOLDEN_DIR . '/' . $name . '.png';
+        $defaultPath = static::GOLDEN_DIR . '/' . $name . '.png';
+        $variant = static::gdVariant();
+        $variantPath = $variant === null ? null : static::GOLDEN_DIR . '/' . $name . '.' . $variant . '.png';
 
         if (\getenv('UPDATE_GOLDEN') === '1') {
-            if (!\is_dir(static::GOLDEN_DIR)) {
-                \mkdir(static::GOLDEN_DIR, 0777, true);
-            }
-            \file_put_contents($goldenPath, $image->getDataPNG());
+            static::updateGolden($image, $defaultPath, $variantPath);
         }
 
+        $goldenPath = $variantPath !== null && \is_file($variantPath) ? $variantPath : $defaultPath;
         $this->assertFileExists($goldenPath, 'Golden image missing. Run the tests with UPDATE_GOLDEN=1 to create it.');
 
         $expected = \imagecreatefrompng($goldenPath);
@@ -122,15 +130,55 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $this->assertSame(
             [\imagesx($expected), \imagesy($expected)],
             [\imagesx($actual), \imagesy($actual)],
-            'Image size differs from golden image "' . $name . '".'
+            'Image size differs from golden image "' . \basename($goldenPath) . '".'
         );
 
         $ratio = static::differentPixelRatio($expected, $actual);
         $this->assertLessThanOrEqual(
             static::MAX_DIFFERENT_PIXEL_RATIO,
             $ratio,
-            \sprintf('%.2f %% of the pixels differ from golden image "%s".', $ratio * 100, $name)
+            \sprintf('%.2f %% of the pixels differ from golden image "%s".', $ratio * 100, \basename($goldenPath))
         );
+    }
+
+    /**
+     * Name of the golden image variant for the GD library in use, or null for PHP's bundled GD.
+     */
+    protected static function gdVariant(): ?string
+    {
+        if (\defined('GD_BUNDLED') && GD_BUNDLED) {
+            return null;
+        }
+        return 'libgd-' . GD_VERSION;
+    }
+
+    /**
+     * Write the golden image for the bundled GD, or the variant for a system libgd if its output differs.
+     */
+    private static function updateGolden(Image $image, string $defaultPath, ?string $variantPath): void
+    {
+        if (!\is_dir(static::GOLDEN_DIR)) {
+            \mkdir(static::GOLDEN_DIR, 0777, true);
+        }
+
+        if ($variantPath === null) {
+            \file_put_contents($defaultPath, $image->getDataPNG());
+            return;
+        }
+
+        $default = \is_file($defaultPath) ? \imagecreatefrompng($defaultPath) : false;
+        $matchesDefault = $default !== false
+            && \imagesx($default) === $image->getWidth()
+            && \imagesy($default) === $image->getHeight()
+            && static::differentPixelRatio($default, $image->getImage()) <= static::MAX_DIFFERENT_PIXEL_RATIO;
+
+        if ($matchesDefault) {
+            if (\is_file($variantPath)) {
+                \unlink($variantPath);
+            }
+        } else {
+            \file_put_contents($variantPath, $image->getDataPNG());
+        }
     }
 
     /**
