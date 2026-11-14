@@ -6,3 +6,6 @@
 /composer.lock
 /composer.local.json
 /composer.local.lock
+/.phpunit.cache
+/.phpunit.result.cache
+/phpunit.xml
