@@ -104,7 +104,11 @@ class Circle implements Draw
             $dImage->drawCircle($center->getX(), $center->getY(), $length * 2, $this->strokeColor);
         }
 
-        $dImage->drawCircle($center->getX(), $center->getY(), ($length - $this->strokeWeight) * 2, $this->fillColor);
+        // For a radius smaller than the stroke weight, there is no fill area left (GD rejects negative diameters).
+        $fillDiameter = ($length - $this->strokeWeight) * 2;
+        if ($fillDiameter > 0) {
+            $dImage->drawCircle($center->getX(), $center->getY(), $fillDiameter, $this->fillColor);
+        }
 
         $image->pasteOn($dImage, 0, 0);
         return $this;

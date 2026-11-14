@@ -1,6 +1,6 @@
-[![Packagist](https://img.shields.io/packagist/dt/DantSu/php-osm-static-api.svg)](https://packagist.org/packages/DantSu/php-osm-static-api)
-[![Latest Stable Version](https://poser.pugx.org/DantSu/php-osm-static-api/v/stable)](https://packagist.org/packages/DantSu/php-osm-static-api)
-[![GitHub license](https://img.shields.io/github/license/DantSu/php-osm-static-api.svg)](https://github.com/DantSu/php-osm-static-api/blob/master/LICENSE)
+[![CI](https://github.com/gexo/php-osm-static-api/actions/workflows/ci.yml/badge.svg)](https://github.com/gexo/php-osm-static-api/actions/workflows/ci.yml)
+[![Latest tag](https://img.shields.io/github/v/tag/gexo/php-osm-static-api?sort=semver)](https://github.com/gexo/php-osm-static-api/tags)
+[![GitHub license](https://img.shields.io/github/license/gexo/php-osm-static-api.svg)](https://github.com/gexo/php-osm-static-api/blob/master/LICENSE)
 
 # PHP OpenStreetMap Static API
 
@@ -8,17 +8,51 @@ PHP library to easily get static image from OpenStreetMap with markers, lines, c
 
 This project uses the [Tile Server](https://wiki.openstreetmap.org/wiki/Tile_servers) of the OpenStreetMap Foundation which runs entirely on donated resources, see [Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/) for more information.
 
-## ✨ Supporting
+## About this fork
 
-⭐ Star this repository to support this project. You will contribute to increase the visibility of this library 🙂
+This is a fork of [DantSu/php-osm-static-api](https://github.com/DantSu/php-osm-static-api) by Franck Alary.
+It keeps the original API and the `DantSu\OpenStreetMapStaticAPI` namespace, and focuses on compatibility with current PHP versions
+(no deprecations, warnings or notices on PHP 8.1 - 8.5).
+
+It depends on [gexo/php-image-editor](https://github.com/gexo/php-image-editor), a fork of `dantsu/php-image-editor`
+with the same goal. That package replaces `dantsu/php-image-editor` and keeps the `DantSu\PHPImageEditor` namespace,
+so `OpenStreetMap::getImage()` still returns a `DantSu\PHPImageEditor\Image`.
+
+See [CHANGELOG.md](./CHANGELOG.md) for the changes compared to the original package.
+
+## Requirements
+
+- PHP 8.1 or newer
+- Extensions: `gd`, `curl`, `mbstring` (required by `gexo/php-image-editor`)
 
 ## Installation
 
-Install this library easily with composer :
+This fork and its dependency `gexo/php-image-editor` are not published on Packagist.
+Add **both** repositories to the `composer.json` of your project:
 
-```cmd
-composer require dantsu/php-osm-static-api
+```json
+{
+  "repositories": [
+    { "type": "vcs", "url": "https://github.com/gexo/php-osm-static-api" },
+    { "type": "vcs", "url": "https://github.com/gexo/php-image-editor" }
+  ],
+  "require": {
+    "gexo/php-osm-static-api": "^0.7"
+  }
+}
 ```
+
+Then run `composer update gexo/php-osm-static-api`.
+
+The `php-image-editor` entry is required although your project uses it only indirectly: Composer only reads
+`repositories` from the root `composer.json` of a project, not from dependencies.
+
+If your project required `dantsu/php-osm-static-api` before, replace it with `gexo/php-osm-static-api`.
+Your PHP code does not need to change, the namespaces are the same.
+
+For `github.com` repositories, Composer uses the GitHub API, which allows only 60 anonymous requests per hour.
+If you hit that limit, either configure a GitHub token (`composer config --global github-oauth.github.com <token>`)
+or add `"no-api": true` to both repository entries, so that Composer uses plain Git instead.
 
 ## How to use
 
@@ -110,6 +144,8 @@ use \DantSu\OpenStreetMapStaticAPI\Markers;
 ## Contributing
 
 Please fork this repository and contribute back using pull requests.
+
+Run the test suite with `composer test`. The tests use local tiles (no network access) and fail on any PHP deprecation, warning or notice.
 
 Any contributions, large or small, major features, bug fixes, are welcomed and appreciated but will be thoroughly reviewed.
 

@@ -107,38 +107,53 @@ class MapData
     /**
      * Get center and zoom from two points.
      *
+     * If the bounding box has no extent (e.g. a single point), the maximum zoom (20) is returned; it is limited
+     * further by the tile layer. The order of the two corners does not matter.
+     *
      * @param LatLng $topLeft
      * @param LatLng $bottomRight
-     * @param int $padding
+     * @param int $padding Padding in pixels on each side of the bounding box
      * @param int $imageWidth
      * @param int $imageHeight
      * @param int $tileSize
      * @return array center : LatLng, zoom : int
+     * @throws \InvalidArgumentException If the padding leaves no space for the bounding box
      */
     public static function getCenterAndZoomFromBoundingBox(LatLng $topLeft, LatLng $bottomRight, int $padding, int $imageWidth, int $imageHeight, int $tileSize): array
     {
         $zoom = 20;
-        $padding *= 2;
+        $availableWidth = $imageWidth - 2 * $padding;
+        $availableHeight = $imageHeight - 2 * $padding;
+
+        if ($availableWidth <= 0 || $availableHeight <= 0) {
+            throw new \InvalidArgumentException(\sprintf(
+                'A padding of %d px leaves no space in an image of %d x %d px.',
+                $padding,
+                $imageWidth,
+                $imageHeight
+            ));
+        }
+
         $topTilePos = MapData::latToYTile($topLeft->getLat(), $zoom, $tileSize);
         $bottomTilePos = MapData::latToYTile($bottomRight->getLat(), $zoom, $tileSize);
         $leftTilePos = MapData::lngToXTile($topLeft->getLng(), $zoom, $tileSize);
         $rightTilePos = MapData::lngToXTile($bottomRight->getLng(), $zoom, $tileSize);
-        $pxZoneWidth = ($rightTilePos['id'] - $leftTilePos['id']) * $tileSize + $rightTilePos['position'] - $leftTilePos['position'];
-        $pxZoneHeight = ($bottomTilePos['id'] - $topTilePos['id']) * $tileSize + $bottomTilePos['position'] - $topTilePos['position'];
+        $pxZoneWidth = \abs(($rightTilePos['id'] - $leftTilePos['id']) * $tileSize + $rightTilePos['position'] - $leftTilePos['position']);
+        $pxZoneHeight = \abs(($bottomTilePos['id'] - $topTilePos['id']) * $tileSize + $bottomTilePos['position'] - $topTilePos['position']);
+
+        // Scale factor relative to zoom 20; a dimension without extent does not limit the zoom.
+        $scale = 1;
+        if ($pxZoneHeight > 0) {
+            $scale = \min($scale, $availableHeight / $pxZoneHeight);
+        }
+        if ($pxZoneWidth > 0) {
+            $scale = \min($scale, $availableWidth / $pxZoneWidth);
+        }
 
         return [
             'center' => GeographicConverter::getCenter($topLeft, $bottomRight),
-            'zoom' => \intval(
-                \floor(
-                    \log(
-                        \min(
-                            1,
-                            ($imageHeight - $padding) / $pxZoneHeight,
-                            ($imageWidth - $padding) / $pxZoneWidth
-                        ) * \pow(2, $zoom)
-                    ) / 0.69314
-                )
-            )
+            // 0.69314 (instead of M_LN2) is kept on purpose: it yields the same zooms as previous releases.
+            'zoom' => (int)\floor(\log($scale * \pow(2, $zoom)) / 0.69314)
         ];
     }
 
