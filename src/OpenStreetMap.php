@@ -168,14 +168,19 @@ class OpenStreetMap
     }
 
     /**
-     * Fit map to an array of points.
+     * Fit map to an array of points. The map is left unchanged if no points are given.
      *
      * @param LatLng[] $points LatLng points
      * @param int $padding Padding in pixel
      * @return $this Fluent interface
+     * @throws \InvalidArgumentException If the padding leaves no space in the image
      */
     public function fitToPoints(array $points, int $padding = 0)
     {
+        if ($points === []) {
+            return $this;
+        }
+
         $outputSize = $this->mapData->getOutputSize();
         $tileSize = $this->mapData->getTileSize();
         $boundingBox = MapData::getBoundingBoxFromPoints($points);
