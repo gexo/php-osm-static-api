@@ -1,7 +1,7 @@
 {
-  "name": "dantsu/php-osm-static-api",
+  "name": "gexo/php-osm-static-api",
   "type": "library",
-  "description": "PHP library to easily get static image from OpenStreetMap (OSM), add markers and draw lines.",
+  "description": "PHP library to easily get static image from OpenStreetMap (OSM), add markers and draw lines. Fork of dantsu/php-osm-static-api with PHP 8.1 - 8.5 support.",
   "keywords": [
     "php",
     "osm",
@@ -12,22 +12,45 @@
     "maps",
     "api"
   ],
-  "homepage": "https://github.com/DantSu/php-osm-static-api",
+  "homepage": "https://github.com/gexo/php-osm-static-api",
   "license": "MIT",
   "authors": [
     {
       "name": "Franck ALARY",
       "homepage": "https://github.com/DantSu",
-      "role": "Developer"
+      "role": "Original author"
+    },
+    {
+      "name": "Stefan Oswald",
+      "homepage": "https://github.com/gexo",
+      "role": "Fork maintainer"
     }
   ],
+  "support": {
+    "issues": "https://github.com/gexo/php-osm-static-api/issues",
+    "source": "https://github.com/gexo/php-osm-static-api"
+  },
   "require": {
-    "php": ">=7.0",
-    "dantsu/php-image-editor": "^1.3"
+    "php": ">=8.1",
+    "gexo/php-image-editor": "^1.5"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5 || ^11.5 || ^12.0"
   },
   "autoload": {
     "psr-4": {
       "DantSu\\OpenStreetMapStaticAPI\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "DantSu\\OpenStreetMapStaticAPI\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit"
+  },
+  "config": {
+    "sort-packages": true
   }
 }
